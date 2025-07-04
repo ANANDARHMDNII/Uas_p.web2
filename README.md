@@ -1,496 +1,569 @@
-<<<<<<< HEAD
-## 👤 Profil Mahasiswa
+# 📚 UAS Pemrograman Website 2
 
-| Atribut         | Keterangan            |
-| --------------- | --------------------- |
-| **Nama**        | Oktavia Rizkha Kurniawati         |
-| **NIM**         | 312310509             |
-| **Kelas**       | TI.23.A.5             |
-| **Mata Kuliah** | Pemrograman Website 2 |
+Repositori ini adalah hasil pengerjaan **UAS Pemrograman Website 2** menggunakan framework **CodeIgniter 4**.  
+Berisi pengembangan fitur artikel dengan kategori, dilengkapi relasi tabel One-to-Many di database.
 
-# 📌 Tugas Praktikum 7-11
+---
 
-# Praktikum 7: Relasi Tabel dan Query Builder
+## 👤 Data Mahasiswa
 
-## Deskripsi
-Praktikum ini merupakan pengembangan dari praktikum sebelumnya. Kali ini, kita akan belajar bagaimana menghubungkan dua tabel di database menggunakan relasi One-to-Many, serta menampilkan data yang saling terkait menggunakan Query Builder di CodeIgniter 4. Praktikum ini dijalankan menggunakan Laragon sebagai local server.
+| Atribut     | Keterangan                          |
+|-------------|-------------------------------------|
+| Nama        | Ananda Rahmadani                    |
+| NIM         | 312310461                           |
+| Kelas       | TI.23.A.5                           |
+| Mata Kuliah | Pemrograman Website 2               |
 
-## Tujuan Praktikum
-1. Memahami dasar relasi antar tabel (One-to-Many)
-2. Menghubungkan tabel artikel dan kategori
-3. Menggunakan Query Builder untuk join data antar tabel
-4. Menampilkan data artikel beserta nama kategorinya
+---
 
-## Langkah-langkah Praktikum
-### 1. Persiapan Database
+## 🗂️ Deskripsi Singkat
 
-Memastikan MySQL Server berjalan dan membuka database `lab_ci4`.
+Proyek ini mengimplementasikan relasi One-to-Many antara tabel **artikel** dan **kategori** menggunakan CodeIgniter 4.  
+Tujuannya adalah agar setiap artikel dapat dikaitkan dengan satu kategori tertentu, serta memungkinkan pengelolaan CRUD artikel lengkap dengan fitur filtering.
 
-### 2. Membuat Tabel Kategori
+---
 
-Membuat tabel baru bernama `kategori` dengan struktur:
+## 🎯 Tujuan Praktikum
 
-- `id_kategori` (INT, PRIMARY KEY, AUTO_INCREMENT)
-- `nama_kategori` (VARCHAR 100)
-- `slug_kategori` (VARCHAR 100)
+- Memahami relasi One-to-Many antar tabel
+- Menghubungkan tabel artikel dengan tabel kategori
+- Melakukan operasi CRUD artikel
+- Menampilkan data artikel lengkap dengan nama kategori
+- Menggunakan Laragon untuk server lokal
 
-**Query SQL:**
+---
+
+## ⚙️ Fitur Aplikasi
+
+✅ Relasi artikel dengan kategori (One-to-Many)  
+✅ CRUD Artikel (Tambah, Edit, Hapus)  
+✅ Filter artikel berdasarkan kategori  
+✅ Pencarian judul artikel di admin  
+✅ Upload gambar artikel  
+✅ Validasi form  
+
+---
+
+## 🛠️ Langkah-langkah Pengerjaan & Buat Tabel Database di Laragon
+
+### 1️⃣ Setup Database di Laragon
+- Jalankan Laragon → Start All
+- Akses phpMyAdmin → buat database `lab_ci4`
+
+---
+
+### 2️⃣ Membuat Tabel `article`
 
 ```sql
-CREATE TABLE kategori (
-    id_kategori INT(11) AUTO_INCREMENT,
-    nama_kategori VARCHAR(100) NOT NULL,
-    slug_kategori VARCHAR(100),
-    PRIMARY KEY (id_kategori)
+CREATE TABLE article (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  status TINYINT(1) DEFAULT '1',
+  slug VARCHAR(200),
+  category VARCHAR(100),
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NULL ON UPDATE CURRENT_TIMESTAMP,
+  title VARCHAR(200),
+  image VARCHAR(200),
+  content TEXT
 );
 ```
 
-**Screenshot:**
-![alt text](Gambar/image.png)
+---
 
-### 3. Modifikasi Tabel Artikel
-
-Menambahkan foreign key `id_kategori` pada tabel `artikel` untuk membuat relasi dengan tabel `kategori`.
-
-**Query SQL:**
+### 3️⃣ Membuat Tabel kategori
 
 ```sql
-ALTER TABLE artikel
-ADD COLUMN id_kategori INT(11),
-ADD CONSTRAINT fk_kategori_artikel
-FOREIGN KEY (id_kategori) REFERENCES kategori(id_kategori);
+CREATE TABLE kategori (
+  id_kategori INT AUTO_INCREMENT PRIMARY KEY,
+  nama_kategori VARCHAR(100) NOT NULL,
+  slug_kategori VARCHAR(100)
+);
 ```
 
-**Screenshot:**
-![alt text](Gambar/image-1.png)
 
-### 4. Membuat Model `KategoriModel`
-
-Membuat file `KategoriModel.php` di folder `app/Models/` untuk mengelola data kategori.
-
-**Kode KategoriModel.php:**
-
+### 4️⃣ Membuat Tabel User
+```sql
+CREATE TABLE user (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(50) NOT NULL,
+  password VARCHAR(255) NOT NULL
+);
+```
+### 5️⃣ Membuat User Model
+**app/Models/UserModel.php**
 ```php
 <?php
 namespace App\Models;
 use CodeIgniter\Model;
-
-class KategoriModel extends Model
+class UserModel extends Model
 {
-    protected $table = 'kategori';
-    protected $primaryKey = 'id_kategori';
+    protected $table = "user";
+    protected $primaryKey = "id";
     protected $useAutoIncrement = true;
-    protected $allowedFields = ['nama_kategori', 'slug_kategori'];
+    protected $allowedFields = ["username", "password"];
 }
+
 ```
 
-**Screenshot:**
-![alt text](Gambar/image-2.png)
+### 6️⃣ Memperbarui Model Artikel
 
-### 5. Modifikasi Model Artikel
+Tambahkan method untuk *join* ke kategori.
 
-Memodifikasi `ArtikelModel.php` dengan menambahkan method `getArtikelDenganKategori()` untuk melakukan join dengan tabel kategori.
-
-**Kode ArtikelModel.php:**
+**app/Models/ArtikelModel.php**
 
 ```php
-<?php
+      <?php
 namespace App\Models;
 use CodeIgniter\Model;
-
-class ArtikelModel extends Model
+class ArticleModel extends Model
 {
-    protected $table = 'artikel';
+    protected $table = 'article';
     protected $primaryKey = 'id';
     protected $useAutoIncrement = true;
-    protected $allowedFields = ['judul', 'isi', 'status', 'slug', 'gambar', 'id_kategori'];
+    protected $allowedFields = ['title', 'content', 'image', 'status', 'slug', 'created_at', 'updated_at', 'category'];
+    protected $useTimestamps = true;
 
-    public function getArtikelDenganKategori()
+    public function searchArticles($keyword)
     {
-        return $this->db->table('artikel')
-            ->select('artikel.*, kategori.nama_kategori')
-            ->join('kategori', 'kategori.id_kategori = artikel.id_kategori')
-            ->get()
-            ->getResultArray();
+        return $this->like('title', $keyword)
+                    ->orLike('content', $keyword)
+                    ->findAll();
+    }
+
+    public function getCategories()
+    {
+        return $this->select('category')
+            ->distinct()
+            ->where('category IS NOT NULL')
+            ->where('category !=', '')
+            ->findAll();
     }
 }
-```
 
-**Screenshot:**
-![alt text](Gambar/image-3.png)
+---
 
-### 6. Modifikasi Controller Artikel.php
+``` 
 
-Memperbarui `Artikel.php` controller untuk:
+### 7️⃣ Memodifikasi Controller Artikel 
 
-- Menggunakan method join dari model
-- Menambahkan filter berdasarkan kategori
-- Menangani kategori pada form tambah dan edit artikel
-
-**Kode Controller Artikel.php:**
+✅ Halaman Index untuk menampilkan artikel dengan kategori  
+✅ Halaman Admin dengan fitur filter kategori & pencarian  
+✅ Form Tambah & Edit dengan pilihan kategori
 
 ```php
 <?php
 namespace App\Controllers;
-use App\Models\ArtikelModel;
-use App\Models\KategoriModel;
-
-class Artikel extends BaseController
+use App\Models\ArticleModel;
+class Article extends BaseController
 {
     public function index()
     {
-        $title = 'Daftar Artikel';
-        $model = new ArtikelModel();
-        $artikel = $model->getArtikelDenganKategori(); // Use the new method
-        return view('artikel/index', compact('artikel', 'title'));
-    }
+        $title = "Article Lists";
+        $model = new ArticleModel();
+        $search = $this->request->getGet('q');
+        $category = $this->request->getGet('category');
+        $sort = $this->request->getGet('sort');
+        $categories = $model->getCategories();
 
+        $builder = $model;
+        if ($search) {
+            $builder = $builder->like('title', $search)->orLike('content', $search);
+        }
+        if ($category) {
+            $builder = $builder->where('category', $category);
+        }
+        if ($sort === 'asc') {
+            $builder = $builder->orderBy('created_at', 'asc');
+        } elseif ($sort === 'desc') {
+            $builder = $builder->orderBy('created_at', 'desc');
+        } else {
+            $builder = $builder->orderBy('created_at', 'desc');
+        }
+        $article = $builder->findAll();
+        if ($this->request->isAJAX()) {
+            return view('article/_list', compact('article'));
+        }
+        return view("article/index", compact("article", "title", "search", "categories", "category", "sort"));
+    }
+    public function view($slug)
+    {
+        $model = new ArticleModel();
+        $article = $model
+            ->where([
+                "slug" => $slug,
+            ])
+            ->first();
+        if (!$article) {
+            throw PageNotFoundException::forPageNotFound();
+        }
+        $title = $article["title"];
+        return view("article/detail", compact("article", "title"));
+    }
     public function admin_index()
     {
-        $title = 'Daftar Artikel (Admin)';
-        $model = new ArtikelModel();
-
-        // Get search keyword
-        $q = $this->request->getVar('q') ?? '';
-
-        // Get category filter
-        $kategori_id = $this->request->getVar('kategori_id') ?? '';
-
-        $data = [
-            'title' => $title,
-            'q' => $q,
-            'kategori_id' => $kategori_id,
-        ];
-
-        // Building the query
-        $builder = $model->table('artikel')
-            ->select('artikel.*, kategori.nama_kategori')
-            ->join('kategori', 'kategori.id_kategori = artikel.id_kategori');
-
-        // Apply search filter if keyword is provided
-        if ($q != '') {
-            $builder->like('artikel.judul', $q);
-        }
-
-        // Apply category filter if category_id is provided
-        if ($kategori_id != '') {
-            $builder->where('artikel.id_kategori', $kategori_id);
-        }
-
-        // Apply pagination
-        $data['artikel'] = $builder->paginate(10);
-        $data['pager'] = $model->pager;
-
-        // Fetch all categories for the filter dropdown
-        $kategoriModel = new KategoriModel();
-        $data['kategori'] = $kategoriModel->findAll();
-
-        return view('artikel/admin_index', $data);
+        $title = "Article Lists";
+        $model = new ArticleModel();
+        $article = $model->findAll();
+        return view("article/admin_index", compact("article", "title"));
     }
-
     public function add()
     {
-        // Validation...
-        if ($this->request->getMethod() == 'post' && $this->validate([
-            'judul' => 'required',
-            'id_kategori' => 'required|integer' // Ensure id_kategori is required and an integer
-        ])) {
-            $model = new ArtikelModel();
-            $model->insert([
-                'judul' => $this->request->getPost('judul'),
-                'isi' => $this->request->getPost('isi'),
-                'slug' => url_title($this->request->getPost('judul')),
-                'id_kategori' => $this->request->getPost('id_kategori')
-            ]);
-            return redirect()->to('/admin/artikel');
-        } else {
-            $kategoriModel = new KategoriModel();
-            $data['kategori'] = $kategoriModel->findAll(); // Fetch categories for the form
-            $data['title'] = "Tambah Artikel";
-            return view('artikel/form_add', $data);
-        }
-    }
+        $validation = \Config\Services::validation();
+        $validation->setRules([
+            "title" => "required",
+            "content" => "required",
+            "category" => "required",
+        ]);
 
+        $isDataValid = $validation->withRequest($this->request)->run();
+
+        if ($isDataValid) {
+            $article = new ArticleModel();
+            $title = $this->request->getPost("title");
+            $slug = url_title($title, '-', true);
+            $exists = $article->where("slug", $slug)->countAllResults();
+            if ($exists > 0) {
+                $slug .= '-' . time();
+            }
+
+            // Handle image upload
+            $imageFile = $this->request->getFile('image');
+            $imageName = null;
+            if ($imageFile && $imageFile->isValid() && !$imageFile->hasMoved()) {
+                $imageName = $imageFile->getRandomName();
+                $imageFile->move(ROOTPATH . 'public/image', $imageName);
+            }
+
+            $article->insert([
+                "title" => $title,
+                "content" => $this->request->getPost("content"),
+                "slug" => $slug,
+                "category" => $this->request->getPost("category"),
+                "created_at" => date("Y-m-d H:i:s"),
+                "image" => $imageName,
+            ]);
+
+            return redirect()->to("admin/article");
+        }
+
+        $title = "Add Article";
+        return view("article/form_add", compact("title"));
+    }
     public function edit($id)
     {
-        $model = new ArtikelModel();
-        if ($this->request->getMethod() == 'post' && $this->validate([
-            'judul' => 'required',
-            'id_kategori' => 'required|integer'
-        ])) {
-            $model->update($id, [
-                'judul' => $this->request->getPost('judul'),
-                'isi' => $this->request->getPost('isi'),
-                'id_kategori' => $this->request->getPost('id_kategori')
+        $article = new ArticleModel();
+        $validation = \Config\Services::validation();
+        $validation->setRules([
+            "title" => "required",
+            "content" => "required",
+            "category" => "required",
+        ]);
+
+        $isDataValid = $validation->withRequest($this->request)->run();
+
+        if ($isDataValid) {
+            $title = $this->request->getPost("title");
+            $slug = url_title($title, '-', true);
+            $exists = $article->where("slug", $slug)->where("id !=", $id)->countAllResults();
+            if ($exists > 0) {
+                $slug .= '-' . time();
+            }
+
+            $article->update($id, [
+                "title" => $title,
+                "content" => $this->request->getPost("content"),
+                "slug" => $slug,
+                "category" => $this->request->getPost("category"),
             ]);
-            return redirect()->to('/admin/artikel');
-        } else {
-            $data['artikel'] = $model->find($id);
-            $kategoriModel = new KategoriModel();
-            $data['kategori'] = $kategoriModel->findAll(); // Fetch categories for the form
-            $data['title'] = "Edit Artikel";
-            return view('artikel/form_edit', $data);
+
+            return redirect()->to("admin/article");
         }
+
+        $data = $article->where("id", $id)->first();
+        $title = "Edit Article";
+        return view("article/form_edit", compact("title", "data"));
     }
 
     public function delete($id)
     {
-        $model = new ArtikelModel();
-        $model->delete($id);
-        return redirect()->to('/admin/artikel');
+        $article = new ArticleModel();
+        $article->delete($id);
+        return redirect("admin/article");
     }
 
-    public function view($slug)
-    {
-        $model = new ArtikelModel();
-        $data['artikel'] = $model->where('slug', $slug)->first();
-        if (empty($data['artikel'])) {
-            throw new \CodeIgniter\Exceptions\PageNotFoundException('Cannot find the article.');
-        }
-        $data['title'] = $data['artikel']['judul'];
-        return view('artikel/detail', $data);
-    }
+    public function save()
+{
+    $data = [
+        'title'    => $this->request->getPost('title'),
+        'content'  => $this->request->getPost('content'),
+        'image'    => $this->request->getPost('image'),
+        'status'   => 1,
+        'slug'     => url_title($this->request->getPost('title'), '-', true),
+        'category' => $this->request->getPost('category'),
+    ];
+
+    dd($data); // Cek apakah status 1 dan created_at tidak dikirim
+    $model = new \App\Models\ArticleModel();
+    $model->save($data);
 }
+
+
+}
+
 ```
-
-**Screenshot:**
-![alt text](Gambar/image-4.png)
-
-### 7. Modifikasi Tampilan (View)
-
-Pada bagian ini, kita akan menyesuaikan tampilan halaman website agar menampilkan data kategori yang telah dikaitkan dengan artikel. Beberapa file view perlu dimodifikasi untuk mendukung fitur relasi One-to-Many ini.
 
 ---
 
-#### a. `index.php` (Halaman Depan)
+### 8️⃣ Menyesuaikan Tampilan (View)
 
-Tampilan ini digunakan oleh pengguna untuk melihat daftar artikel secara umum. Modifikasi dilakukan agar menampilkan nama kategori dari setiap artikel.
-
-**Kode `index.php`:**
-
+✅ **index.php**  
+- Menampilkan judul artikel, isi singkat, gambar, dan kategori.
 ```php
-<?= $this->include('template/header'); ?>
-<?php if ($artikel): foreach ($artikel as $row): ?>
+<?= $this->include("template/header") ?>
+<form method="get" action="<?= base_url('/article') ?>" style="margin-bottom:20px;">
+    <input type="text" name="q" value="<?= isset(
+        $search
+    ) ? esc($search) : '' ?>" placeholder="Search articles..." />
+    <select name="category">
+        <option value="">All Categories</option>
+        <?php if (!empty($categories)): foreach ($categories as $cat): ?>
+            <option value="<?= esc($cat['category']) ?>" <?= (isset($category) && $category == $cat['category']) ? 'selected' : '' ?>><?= esc($cat['category']) ?></option>
+        <?php endforeach; endif; ?>
+    </select>
+    <select name="sort">
+        <option value="desc" <?= (isset($sort) && $sort == 'desc') ? 'selected' : '' ?>>Latest</option>
+        <option value="asc" <?= (isset($sort) && $sort == 'asc') ? 'selected' : '' ?>>Oldest</option>
+    </select>
+    <button type="submit">Search</button>
+</form>
+<div id="article-list">
+<?php if ($article):
+    foreach ($article as $row): ?>
 <article class="entry">
-    <h2><a href="<?= base_url('/artikel/' . $row['slug']); ?>"><?= $row['judul']; ?></a></h2>
-    <p>Kategori: <?= $row['nama_kategori'] ?></p>
-    <img src="<?= base_url('/gambar/' . $row['gambar']); ?>" alt="<?= $row['judul']; ?>">
-    <p><?= substr($row['isi'], 0, 200); ?></p>
+    <h2><a href="<?= base_url("/article/" . $row["slug"]) ?>"><?= $row["title"] ?></a></h2>
+    <img src="<?= base_url("/image/" . $row["image"]) ?>" alt="<?= $row["slug"] ?>">
+    <p><?= substr($row["content"], 0, 200) ?>...</p>
+    <a href="<?= base_url("/article/" . $row["slug"]) ?>" class="btn-read-more">Read More</a>
 </article>
 <hr class="divider" />
-<?php endforeach; else: ?>
+<?php endforeach;
+else: ?>
 <article class="entry">
-    <h2>Belum ada data.</h2>
+    <h2>No articles available.</h2>
 </article>
 <?php endif; ?>
-<?= $this->include('template/footer'); ?>
+</div>
+<?= $this->include("template/footer") ?>
+```
 
-#### b. admin_index.php (Halaman Admin)
-- File ini menampilkan daftar artikel di halaman admin. Modifikasi dilakukan untuk:
-- Menampilkan kolom kategori pada tabel artikel
-- Menyediakan dropdown filter berdasarkan kategori
-- Menambahkan fitur pencarian berdasarkan judul artikel
+✅ **admin_index.php**  
+- Tabel artikel + kolom kategori
+- Form pencarian & filter kategori
+```php
+<?= $this->include("template/header") ?>
 
-***Kode admin_index.php:***
+<div id="container">
+    <a href="<?= base_url('/admin/article/add') ?>" class="btn-read-more">➕ Add Article</a>
 
-php
-Salin
-Edit
-<?= $this->include('template/admin_header'); ?>
-<h2><?= $title; ?></h2>
-<div class="row mb-3">
-    <div class="col-md-6">
-        <form method="get" class="form-inline">
-            <input type="text" name="q" value="<?= $q; ?>" placeholder="Cari judul artikel" class="form-control mr-2">
-            <select name="kategori_id" class="form-control mr-2">
-                <option value="">Semua Kategori</option>
-                <?php foreach ($kategori as $k): ?>
-                <option value="<?= $k['id_kategori']; ?>" <?= ($kategori_id == $k['id_kategori']) ? 'selected' : ''; ?>><?= $k['nama_kategori']; ?></option>
-                <?php endforeach; ?>
-            </select>
-            <input type="submit" value="Cari" class="btn btn-primary">
-        </form>
+    <div id="main">
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Slug</th>
+                        <th>Category</th>
+                        <th>Created At</th>
+                        <th>Status</th>
+                        <th>Function</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if ($article): ?>
+                        <?php foreach ($article as $row): ?>
+                            <tr>
+                                <td><?= esc($row["id"]) ?></td>
+                                <td>
+                                    <b class="title-text"><?= esc($row["title"]) ?></b>
+                                    <p class="content-preview"><?= esc(substr(strip_tags($row["content"]), 0, 50)) ?>...</p>
+                                </td>
+                                <td class="slug-column"><?= esc($row["slug"]) ?></td>
+                                <td><?= esc($row["category"] ?? 'N/A') ?></td>
+                                <td><?= date('d M Y, H:i', strtotime($row["created_at"] ?? 'now')) ?></td>
+                                <td><?= esc($row["status"] ?? 'Draft') ?></td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a class="btn btn-read-more" href="<?= base_url("/admin/article/edit/" . $row["id"]) ?>">✏️ Edit</a>
+                                        <a class="btn btn-back" onclick="return confirm('Are you sure?');" href="<?= base_url("/admin/article/delete/" . $row["id"]) ?>">🗑️ Delete</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: var(--text-color);">No articles available.</td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
-<table class="table">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Judul</th>
-            <th>Kategori</th>
-            <th>Status</th>
-            <th>Aksi</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php if (count($artikel) > 0): ?>
-        <?php foreach ($artikel as $row): ?>
-        <tr>
-            <td><?= $row->id; ?></td>
-            <td>
-                <b><?= $row->judul; ?></b>
-                <p><small><?= substr($row->isi, 0, 50); ?></small></p>
-            </td>
-            <td><?= $row->nama_kategori; ?></td>
-            <td><?= $row->status; ?></td>
-            <td>
-                <a class="btn btn-sm btn-info" href="<?= base_url('/admin/artikel/edit/' . $row->id); ?>">Ubah</a>
-                <a class="btn btn-sm btn-danger" onclick="return confirm('Yakin menghapus data?');" href="<?= base_url('/admin/artikel/delete/' . $row->id); ?>">Hapus</a>
-            </td>
-        </tr>
-        <?php endforeach; ?>
-        <?php else: ?>
-        <tr>
-            <td colspan="5">Tidak ada data.</td>
-        </tr>
-        <?php endif; ?>
-    </tbody>
-</table>
-<?= $pager->only(['q', 'kategori_id'])->links(); ?>
-<?= $this->include('template/admin_footer'); ?>
+
+<?= $this->include("template/footer") ?>
+
 ```
-**Screenshot:**
-![alt text](Gambar/image-5.png)
 
-#### c. form_add.php (Form Tambah Artikel)
-
-Menambahkan dropdown untuk memilih kategori saat menambah artikel baru.
-
-**Kode form_add.php:**
-
+✅ **form_add.php** dan **form_edit.php**  
+- Dropdown untuk memilih kategori
+- Input judul, isi, gambar
+- 
+**form_add.php**
 ```php
-<?= $this->include('template/admin_header'); ?>
-<h2><?= $title; ?></h2>
+<?= $this->include("template/header") ?>
+<h2><?= $title ?></h2>
+<form action="" method="post" enctype="multipart/form-data">
+    <p>
+        <label for="title">Title:</label><br>
+        <input type="text" id="title" name="title">
+    </p>
+    <p>
+        <label for="content">Content:</label><br>
+        <textarea id="content" name="content" cols="50" rows="10"></textarea>
+    </p>
+    <p>
+        <label for="slug">Slug:</label><br>
+        <input type="text" id="slug" name="slug">
+    </p>
+    <p>
+        <label for="category">Category:</label><br>
+        <input type="text" id="category" name="category">
+    </p>
+    <p>
+        <label for="created_at">Created At:</label><br>
+        <input type="datetime-local" id="created_at" name="created_at" value="<?= date('Y-m-d\TH:i') ?>">
+    </p>
+    <p>
+        <label for="image">Image:</label><br>
+        <input type="file" id="image" name="image" accept="image/*">
+    </p>
+    <p><input type="submit" value="Submit" class="btn-back"></p>
+</form>
+<?= $this->include("template/footer") ?>
+
+```
+**form_edit.php**
+```php
+<?= $this->include("template/header") ?>
+<h2><?= $title ?></h2>
 <form action="" method="post">
     <p>
-        <label for="judul">Judul</label>
-        <input type="text" name="judul" id="judul" required>
+        <label for="title">Title:</label><br>
+        <input type="text" id="title" name="title" value="<?= $data["title"] ?>">
     </p>
     <p>
-        <label for="isi">Isi</label>
-        <textarea name="isi" id="isi" cols="50" rows="10"></textarea>
+        <label for="content">Content:</label><br>
+        <textarea id="content" name="content" cols="50" rows="10"><?= $data["content"] ?></textarea>
     </p>
     <p>
-        <label for="id_kategori">Kategori</label>
-        <select name="id_kategori" id="id_kategori" required>
-            <?php foreach($kategori as $k): ?>
-            <option value="<?= $k['id_kategori']; ?>"><?= $k['nama_kategori']; ?></option>
-            <?php endforeach; ?>
-        </select>
+        <label for="slug">Slug:</label><br>
+        <input type="text" id="slug" name="slug" value="<?= $data["slug"] ?>">
     </p>
-    <p><input type="submit" value="Kirim" class="btn btn-large"></p>
+    <p>
+        <label for="category">Category:</label><br>
+        <input type="text" id="category" name="category" value="<?= $data["category"] ?>">
+    </p>
+    <p>
+        <label for="created_at">Created At:</label><br>
+        <input type="datetime-local" id="created_at" name="created_at" value="<?= date('Y-m-d\TH:i', strtotime($data['created_at'])) ?>">
+    </p>
+    <p><input type="submit" value="Submit" class="btn-back"></p>
 </form>
-<?= $this->include('template/admin_footer'); ?>
+<?= $this->include("template/footer") ?>
+
+```
+---
+
+## 💻 Testing
+
+Berikut rangkuman hasil pengujian aplikasi yang dibuat:
+
+✅ 1. Halaman Daftar Artikel Lengkap Kategori
+Menampilkan seluruh artikel beserta nama kategori yang terhubung.
+📸 Contoh tampilan:
+![image](https://github.com/user-attachments/assets/8b75ee9c-6eac-4082-96ec-58d4836a447c)
+
+✅ 2. Formulir Penambahan Artikel Baru
+Form tambah artikel dilengkapi dropdown kategori untuk pemilihan yang sesuai.
+📸 Contoh tampilan form tambah:
+![image](https://github.com/user-attachments/assets/4713160c-37a1-4f17-82b6-4410102dfef4)
+
+✅ 3. Fitur Edit Artikel
+Memungkinkan pengguna admin mengubah isi artikel, judul, dan mengganti kategori terpilih.
+📸 Contoh tampilan form edit:
+![image](https://github.com/user-attachments/assets/019985cb-bd84-418f-83c1-8d1e79a51cc2)
+
+📸 Hasil setelah disimpan:
+![image](https://github.com/user-attachments/assets/4ce0f19d-dfa6-4097-bfd0-8d7b2a0859e4)
+
+✅ 4. Fitur Penghapusan Artikel
+Admin dapat menghapus artikel yang sudah tidak diperlukan.
+📸 Dialog konfirmasi hapus:
+![image](https://github.com/user-attachments/assets/dac82b7e-e26c-4ab7-a79d-085cf773c8f1)
+
+📸 Daftar artikel setelah dihapus:
+![image](https://github.com/user-attachments/assets/ee063169-2571-4bce-b212-23acd7ea173f)
+
+
+---
+
+## ⚠️ Catatan Penting
+
+- Folder `writable/` di-ignore dari Git, kecuali file `index.html`
+- File `.env` berisi konfigurasi database **tidak diupload**
+- Pastikan `writable/` bisa diakses server untuk logs & uploads
+
+---
+
+## 🗃️ Cara Menjalankan
+
+✅ Clone repository:  
+```bash
+git clone https://github.com/ANANDARHMDNII/Uas_p.web2.git
 ```
 
-**Screenshot:**
-![alt text](Gambar/image-6.png)
-
-#### d. form_edit.php (Form Edit Artikel)
-
-Menambahkan dropdown kategori dengan nilai yang sudah terpilih sesuai data artikel.
-
-**Kode form_edit.php:**
-
-```php
-<?= $this->include('template/admin_header'); ?>
-<h2><?= $title; ?></h2>
-<form action="" method="post">
-    <p>
-        <label for="judul">Judul</label>
-        <input type="text" name="judul" value="<?= $artikel['judul']; ?>" id="judul" required>
-    </p>
-    <p>
-        <label for="isi">Isi</label>
-        <textarea name="isi" id="isi" cols="50" rows="10"><?= $artikel['isi']; ?></textarea>
-    </p>
-    <p>
-        <label for="id_kategori">Kategori</label>
-        <select name="id_kategori" id="id_kategori" required>
-            <?php foreach($kategori as $k): ?>
-            <option value="<?= $k['id_kategori']; ?>" <?= ($artikel['id_kategori'] == $k['id_kategori']) ? 'selected' : ''; ?>><?= $k['nama_kategori']; ?></option>
-            <?php endforeach; ?>
-        </select>
-    </p>
-    <p><input type="submit" value="Kirim" class="btn btn-large"></p>
-</form>
-<?= $this->include('template/admin_footer'); ?>
+✅ Masuk folder project:  
+```bash
+cd Uas_p.web2
 ```
 
-**Screenshot:**
-![alt text](Gambar/image-7.png)
+✅ Install dependency:  
+```bash
+composer install
+```
 
+✅ Copy file env & konfigurasi:  
+```bash
+cp env .env
+```
+Edit `.env` sesuai koneksi database lokal.
 
-## 💻 Panduan Awal Menjalankan Web Menggunakan Laragon
+✅ Jalankan server:  
+```bash
+php spark serve
+```
+Akses di browser: `http://localhost:8080`
 
-### 1. Menyalakan Laragon
-- Buka aplikasi **Laragon**
-- Pastikan **Apache** dan **MySQL** sudah berjalan
+✅ Import file `6x.sql` ke database MySQL.
 
-### 2. Menempatkan Folder Proyek
-- Salin folder project CodeIgniter 4 ke direktori:
-=======
-# CodeIgniter 4 Framework
+---
 
-## What is CodeIgniter?
+## 🚀 Catatan
+Proyek ini dibuat sebagai media belajar. Cocok untuk teman-teman yang mau memahami konsep relasi One-to-Many di CodeIgniter 4 sambil praktek langsung. Jangan ragu untuk bereksperimen atau menambah fitur lain sesuai ide kalian!
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+📢 Kontribusi
+Silakan fork atau modifikasi project ini untuk kebutuhan tugas atau pengembangan lebih lanjut. Sharing is caring!
 
-This repository holds the distributable version of the framework.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
-
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
-
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
-
-## Important Change with index.php
-
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
-
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
-
-**Please** read the user guide for a better explanation of how CI4 works!
-
-## Repository Management
-
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
-
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
-
-## Contributing
-
-We welcome contributions from the community.
-
-Please read the [*Contributing to CodeIgniter*](https://github.com/codeigniter4/CodeIgniter4/blob/develop/CONTRIBUTING.md) section in the development repository.
-
-## Server Requirements
-
-PHP version 8.1 or higher is required, with the following extensions installed:
-
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
-
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - If you are still using PHP 7.4 or 8.0, you should upgrade immediately.
-> - The end of life date for PHP 8.1 will be December 31, 2025.
-
-Additionally, make sure that the following extensions are enabled in your PHP:
-
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
->>>>>>> c439f66 (first init)
- Uas_p.web2
-# Uas_p.web2
-.# Uas_p.web2
+❤️ Terima kasih
+Terima kasih sudah mampir dan membaca. Semoga membantu proses belajar kalian. Happy coding!
