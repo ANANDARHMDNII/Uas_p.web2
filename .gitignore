@@ -1,0 +1,3 @@
+# Ignore writable content except index.html
+writable/*
+!writable/**/index.html
