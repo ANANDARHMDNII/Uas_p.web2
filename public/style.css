@@ -1,0 +1,202 @@
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300;1,400;1,600;1,700;1,800&display=swap');
+
+/* Reset CSS */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Open Sans', sans-serif;
+}
+
+:root {
+  --bg-color: #fff1f5;
+  --text-color: #5e4955;
+  --nav-bg: #fbb1cf;
+  --nav-hover: #f599bd;
+  --footer-bg: #f9c8dc;
+  --card-bg: #ffeaf1;
+  --shadow-light: 0px 2px 5px rgba(0, 0, 0, 0.05);
+  --highlight-text: #d94a92;
+  --link-color: #e06292;
+  --link-hover: #c94f74;
+}
+
+/* Body */
+body {
+  background: var(--bg-color);
+  color: var(--text-color);
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Container */
+#container {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 20px;
+  box-shadow: 0 0 1em #fcddec;
+  background: #ffffff;
+  border-radius: 16px;
+}
+
+/* Header */
+header {
+  padding: 20px;
+  text-align: center;
+}
+
+header h1 {
+  color: var(--highlight-text);
+  font-size: 2rem;
+}
+
+/* Navigation */
+nav {
+  background: var(--nav-bg);
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+  border-radius: 12px;
+}
+
+nav a {
+  color: #ffffff;
+  text-decoration: none;
+  padding: 12px 18px;
+  font-weight: bold;
+  transition: background 0.3s ease;
+  border-radius: 8px;
+}
+
+nav a.active,
+nav a:hover {
+  background: var(--nav-hover);
+}
+
+/* Hero Panel */
+#hero {
+  background: var(--card-bg);
+  padding: 50px 20px;
+  margin-bottom: 20px;
+  border-radius: 16px;
+  text-align: center;
+}
+
+#hero h1 {
+  font-size: 35px;
+  color: var(--text-color);
+}
+
+/* Main Content */
+#wrapper {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+#main {
+  flex: 2;
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: var(--shadow-light);
+}
+
+#sidebar {
+  flex: 1;
+  max-width: 260px;
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: var(--shadow-light);
+}
+
+/* Widget */
+.widget-box {
+  background: var(--card-bg);
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+  box-shadow: var(--shadow-light);
+}
+
+.widget-box h3 {
+  margin-bottom: 10px;
+  font-size: 1.3rem;
+  color: var(--highlight-text);
+  font-weight: bold; /* Bold untuk "Latest Article" */
+}
+
+.widget-box ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.widget-box ul li a {
+  text-decoration: none;
+  color: var(--link-color); /* Pink soft tapi jelas terbaca */
+  font-weight: 500;
+  display: block;
+  padding: 6px 0;
+  transition: color 0.3s;
+}
+
+.widget-box ul li a:hover {
+  color: var(--link-hover);
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 15px 0;
+  background: var(--footer-bg);
+  color: var(--text-color);
+  margin-top: auto;
+  border-top: 3px dashed #f3c1d6;
+}
+
+/* Table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-top: 20px;
+}
+
+table th,
+table td {
+  border: 1px solid #f3c1d6;
+  padding: 12px 15px;
+  text-align: left;
+}
+
+table th {
+  background: var(--nav-bg);
+  color: #ffffff;
+}
+
+table tr:nth-child(even) {
+  background: #fff7fa;
+}
+
+/* Buttons */
+.btn-read-more,
+.btn-back {
+  display: inline-block;
+  padding: 10px 15px;
+  background-color: #e48abf;
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+}
+
+.btn-read-more:hover,
+.btn-back:hover {
+  background-color: #d672a7;
+}
